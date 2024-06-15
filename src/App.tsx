@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Analytics } from "@vercel/analytics/react"
 import './App.css';
 import Board from './component/Board';
 
@@ -12,9 +13,12 @@ const CanvasDrawing = () => {
   }, []);
 
   return (
-    <div className="App" >
-        <Board brushColor={'black'} brushSize={5} />
-    </div>
+    <>
+        <div className="App" >
+            <Board brushColor={'black'} brushSize={5} />
+        </div>
+        <Analytics />
+    </>
   );
 };
 

@@ -28,14 +28,14 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize }) => {
         let newSocket: Socket | null = null;
     
         if (!socket) {
-            newSocket = io("https://collabdraw1-vwqces7l.b4a.run/");
+            newSocket = io(import.meta.env.SERVER_URL);
             console.log(newSocket, "Connected To Socket");
             setSocket(newSocket);
         }
     
         return () => {
-            if (newSocket) {
-                newSocket.disconnect(); // Disconnect the socket if it was created
+            if (socket) {
+                socket.disconnect(); // Disconnect the socket if it was created
             }
             setSocket(null); // Reset socket state
         };
