@@ -4,9 +4,109 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-body {
+.tools {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: fit-content;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 20px;
+    padding-left: 20px;
+    border-radius: 20px;
+    background-color: white;
+    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.sliderValue {
+  position: absolute;
+  top: -10%; /* Position at vertical center */
+  left: 50%; /* Position at horizontal center */
+  transform: translate(-100%, -100%); /* Center align the element */
+  background-color: rgba(0, 0, 0, 0.8); /* Example background color */
+  color: white; /* Example text color */
+  padding: 4px 8px;
+  border-radius: 4px;
+  pointer-events: none; /* Ensure it doesn't interfere with mouse events */
+}
+
+.colorSelector {
+    position: relative;
+    border: 1px solid;
+    border-radius: 25px;
+    height: 40px;
+    padding: 0;
+    width: 40px;
     overflow: hidden;
+    cursor: pointer;
+}
+
+.colorSelector input[type="color"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: calc(100% + 8px);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Styling the brush size selector */
+.brushSizeSelector {
+  margin-right: 10px;
+}
+
+.brushSizeSelector input[type="range"] {
+  width: 100%;
+  /* Customize the appearance of the slider */
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 5px;
+  background: #ddd;
+  outline: none;
+}
+
+.brushSizeSelector input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+/* Styling the eraser button */
+.eraser {
+  padding: 8px 16px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.eraser:hover {
+  background-color: #d32f2f;
+}
+
+.body {
+    overflow-x: hidden;
+    height: 100vh;
+    width: 100vw;
 }
