@@ -28,7 +28,7 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize }) => {
         let newSocket: Socket | null = null;
     
         if (!socket) {
-            newSocket = io(import.meta.env.VITE_SERVERURL);
+            newSocket = io("https://collabdraw1-vwqces7l.b4a.run/");
             console.log(newSocket, "Connected To Socket");
             setSocket(newSocket);
         }
