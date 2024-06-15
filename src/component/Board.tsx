@@ -23,12 +23,12 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize }) => {
             socket.emit('mousePosition', {x: e.pageX / window.innerWidth, y: e.pageY / window.innerHeight, id: socket.id})
         }
     };
-    console.log("Sever URL", process.env.SERVER_URL)
+    console.log("Sever URL", import.meta.env.VITE_SERVERURL)
     useEffect(() => {
         let newSocket: Socket | null = null;
     
         if (!socket) {
-            newSocket = io(import.meta.env.SERVER_URL);
+            newSocket = io(import.meta.env.VITE_SERVERURL);
             console.log(newSocket, "Connected To Socket");
             setSocket(newSocket);
         }
