@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
-import io, { Socket } from "socket.io-client"
-import Cursor from "../assets/cursor.svg"
+import Cursor from "../assets/cursor.svg";
+import { useParams } from 'react-router-dom';
 
 interface MyBoard {
     brushColor: string;
@@ -60,63 +60,66 @@ function getMouse(e: any, canvas: any) {
 const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [windowSize, setWindowSize] = useState([window.innerWidth, window.innerHeight]);
-    const [socket, setSocket] = useState<Socket | null>(null)
+    const [socket, setSocket] = useState<WebSocket | null>(null)
     const [collabPositions, setCollabPositions] = useState<CollaboratorPosition[] | null>(null)
+    const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
-    console.log(windowSize)
+    const { username } = useParams<{ username: string }>();
 
-    // const handleMouseMove = (e: MouseEvent) => {
-    //     if (socket) {
-    //         const canvas = canvasRef.current;
-    //         const rect = canvas?.getBoundingClientRect();
-    //         if (rect) {
-    //             socket.emit('mousePosition', {x: (e.pageX), y: (e.pageY), id: socket.id})
-    //         }
-    //     }
-    // };
-    console.log("Sever URL", import.meta.env.VITE_SERVERURL)
     useEffect(() => {
-        let newSocket: Socket | null = null;
-    
-        if (!socket) {
-            newSocket = io("" + import.meta.env.VITE_SERVERURL);
-            console.log(newSocket, "Connected To Socket");
-            setSocket(newSocket);
+        if (!socket && username) {
+            const newSocket = new WebSocket(`ws://localhost:5000?username=${encodeURIComponent(username)}`);
+            newSocket.onopen = () => {
+                console.log('WebSocket Connected');
+                setSocket(newSocket);
+            };
+            newSocket.onclose = () => {
+                console.log('WebSocket Disconnected');
+                setSocket(null);
+            };
+            newSocket.onerror = (error) => {
+                console.error('WebSocket Error:', error);
+                setSocket(null);
+            };
         }
     
         return () => {
             if (socket) {
-                socket.disconnect(); // Disconnect the socket if it was created
-            }
-            setSocket(null); // Reset socket state
+                socket.close();
+                setSocket(null);
+            };
         };
-    }, []);
+    }, [socket]);
 
     useEffect(() => {
         if(socket) {
-            socket.on('canvasImage', (data: string) => {
-                const image = new Image();
-                image.src = data;
+            console.log(socket)
+            socket.onmessage = (event: any) => {
+                console.log(event.data)
+                const message = JSON.parse(event.data)
+                console.log(message)
 
-                const canvas = canvasRef.current;
-                const ctx = canvas?.getContext('2d');
-                if (ctx) {
-                    image.onload = () => {
-                        ctx.drawImage(image, 0, 0);
+                if (message.type === 'canvasImage') {
+                    const image = new Image();
+                    image.src = message.packet;
+
+                    const canvas = canvasRef.current;
+                    const ctx = canvas?.getContext('2d');;
+                    if (ctx) {
+                        image.onload = () => {
+                            ctx.drawImage(image, 0, 0);
+                        }
                     }
+                } else if (message.type === 'onlineUsers') {
+                    console.log(message.users)
+                    setOnlineUsers(message.users)
                 }
-            });
-            socket.on('mousePositions', (positions: CollaboratorPosition[]) => {
-                setCollabPositions(positions);
-                console.log(positions)
-            })
+            }
+        } else {
+            console.log("No Socket Connection FOund")
         }
 
         return () => {
-            if (socket) {
-                socket.off('canvasImage');
-                socket.off('mousePosition');
-            }
         };
     }, [socket]);
 
@@ -141,11 +144,6 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
             });
             isDrawing = true;
         }
-        //const startDrawing = (e: { offsetX: number; offsetY: number; }) => {
-        //    isDrawing = true;
-        //    console.log(`drawing started`, brushColor, brushSize);
-        //    [lastX, lastY] = [e.offsetX, e.offsetY];
-        //};
 
         function mouseMove(e: any) {
             if (!isDrawing) return;
@@ -181,7 +179,7 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
                     memctx.drawImage(canvas, 0, 0);
                     const dataURL = canvas.toDataURL();
                     if (socket) {
-                        socket.emit('canvasImage', dataURL)
+                        socket.send(JSON.stringify({type: 'canvasImage', packet: dataURL}))
                         console.log('Drawing Ended');
                     }
 
@@ -189,50 +187,13 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
                 points = []
             }
         }
-
-        // const draw = (e: {offsetX: number; offsetY: number; }) => {
-        //     if(!isDrawing) return;
-
-        //     const canvas = canvasRef.current;
-        //     if (canvas) {
-        //         const ctx = canvas.getContext('2d');
-        //         if (ctx) {
-        //             ctx.beginPath();
-        //             ctx.moveTo(lastX, lastY);
-        //             const points = [
-        //                 {x: e.offsetX, y: e.offsetY},
-        //                 {x: lastX, y: lastY}
-        //             ]
-        //             //const centerX = (lastX + e.offsetX) / 2;
-        //             //const centerY = (lastY + e.offsetY) / 2;
-        //             //ctx.quadraticCurveTo(lastX, lastY, centerX, centerY);
-        //             //ctx.stroke()
-        //             drawPoints(ctx, points)
-        //         }
-
-        //         [lastX, lastY] = [e.offsetX, e.offsetY];
-        //     }
-        // };
         
-
-        // const endDrawing = () => {
-        //     const canvas = canvasRef.current;
-        //     if (canvas) {
-        //         const dataURL = canvas.toDataURL();
-        //         if (socket) {
-        //             socket.emit('canvasImage', dataURL)
-        //             console.log('Drawing Ended');
-        //         }
-        //     }
-        //     isDrawing = false;
-        // };
 
         const canvas: HTMLCanvasElement | null = canvasRef.current;
         const ctx = canvasRef.current?.getContext('2d');
 
         if (ctx) {
-            //ctx.strokeStyle = brushColor;
-            //ctx.lineWidth = brushSize;
+
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
         }
@@ -267,25 +228,29 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
             window.removeEventListener('resize', handleWindowResize);
         };
     }, []);
-
-    //useEffect(() => {
-    //    document.addEventListener('mousemove', handleMouseMove);
-    //    document.addEventListener('scroll', handleMouseMove);
-
-    //    return () => {
-    //        document.removeEventListener('mousemove', handleMouseMove);
-    //        document.removeEventListener('scroll', handleMouseMove);
-    //    };
-    //}, [socket]);
     
     return (
-        <>
-            <canvas
-                ref={canvasRef}
-                width={5000}
-                height={5000}
-                style={{ backgroundColor: 'white', borderWidth: '10px', borderColor: 'black' }}
-            />
+        <>  
+            {socket ? (
+                <>
+                <div style={{position: 'absolute', backgroundColor: 'lightgray', padding: '10px', borderBottom: '1px solid black', top: '10px', right: '10px' }}>
+                    <h2>Online Users</h2>
+                    <ul>
+                        {onlineUsers.map((user, index) => (
+                            <li key={index}>{user}</li>
+                        ))}
+                    </ul>
+                </div>
+                <canvas
+                    ref={canvasRef}
+                    width={5000}
+                    height={5000}
+                    style={{ backgroundColor: 'white', borderWidth: '10px', borderColor: 'black' }}
+                />
+                </>
+            ) :  (
+                null
+            )}
             {collabPositions?.map((value) => (
                 <>
                 <div
@@ -293,8 +258,8 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
                         position: 'absolute',
                         left: (value.x) + 'px',
                         top: (value.y) + 7 + 'px',
-                        opacity: value.id === socket?.id ? 0 : 1,
-                        zIndex: value.id === socket?.id ? -10 : 9999,
+                        opacity: value.id === socket?.url ? 0 : 1,
+                        zIndex: value.id === socket?.url ? -10 : 9999,
                     }}
                     key={value.id}
                 >
@@ -310,8 +275,8 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
                         width: '32px',
                         height: '32px',
                         borderRadius: '0%',
-                        zIndex: value.id === socket?.id ? -10 : 9999,
-                        opacity: value.id === socket?.id ? 0 : 1,
+                        zIndex: value.id === socket?.url ? -10 : 9999,
+                        opacity: value.id === socket?.url ? 0 : 1,
                     }}
                     key={value.id}
                 />
