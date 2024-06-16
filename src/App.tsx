@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Analytics } from "@vercel/analytics/react"
+import {
+    BrowserRouter as Router,
+    Route, Routes
+} from 'react-router-dom'
 import './App.css';
 import Board from './component/Board';
+import LoginRoom from './component/LoginRoom';
 
 const CanvasDrawing = () => {
   useEffect(() => {
@@ -35,9 +40,13 @@ const CanvasDrawing = () => {
   }
 
   return (
-    <>
+    <Router>
       <div className="App">
-        <Board brushColor={brushColor} brushSize={brushSize} eraserMode={eraserMode} />
+        <Routes>
+            <Route path="/board/:username" element={<Board brushColor={brushColor} brushSize={brushSize} eraserMode={eraserMode} />} />
+            <Route path="/board" element={<Board brushColor={brushColor} brushSize={brushSize} eraserMode={eraserMode} />} />
+            <Route path="/" element={<LoginRoom />} />
+        </Routes>
       </div>
       <Analytics />
       <div className="tools">
@@ -65,7 +74,7 @@ const CanvasDrawing = () => {
           <input type='button' value="Eraser" className='eraser' style={{ backgroundColor: eraserMode ? 'blue' : '#f44336' }} onClick={handleEraserChange} />
         </div>
       </div>
-    </>
+    </Router>
   );
 };
 
