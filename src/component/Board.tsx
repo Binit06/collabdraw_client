@@ -59,7 +59,7 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
 
     useEffect(() => {
         if (!socket && username) {
-            const newSocket = new WebSocket(`ws://localhost:5000?username=${encodeURIComponent(username)}`);
+            const newSocket = new WebSocket(`${import.meta.env.VITE_SERVERURL}?username=${encodeURIComponent(username)}`);
             newSocket.onopen = () => {
                 console.log('WebSocket Connected');
                 setSocket(newSocket);
