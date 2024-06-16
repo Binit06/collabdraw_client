@@ -1,17 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react';
-import Cursor from "../assets/cursor.svg";
 import { useParams } from 'react-router-dom';
 
 interface MyBoard {
     brushColor: string;
     brushSize: number;
     eraserMode: boolean;
-}
-
-interface CollaboratorPosition {
-    x: number;
-    y: number;
-    id: string;
 }
 
 function drawPoints(ctx: any, points: any) {
@@ -59,9 +52,7 @@ function getMouse(e: any, canvas: any) {
 
 const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [windowSize, setWindowSize] = useState([window.innerWidth, window.innerHeight]);
     const [socket, setSocket] = useState<WebSocket | null>(null)
-    const [collabPositions, setCollabPositions] = useState<CollaboratorPosition[] | null>(null)
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
     const { username } = useParams<{ username: string }>();
@@ -126,8 +117,6 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
     useEffect(() => {
 
         let isDrawing = false;
-        // let lastX = 0;
-        // let lastY = 0;
 
         let memCanvas = document.createElement('canvas');
         memCanvas.width = 300;
@@ -156,7 +145,6 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
                 if (eraserMode) {
                     ctx.strokeStyle= 'white'
                 } else {
-                    //ctx.globalCompositeOperation = "source-over";
                     ctx.strokeStyle = brushColor;
                 }
             }
@@ -215,19 +203,6 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
             }
         }
     }, [brushColor, brushSize, eraserMode, socket]);
-
-
-    useEffect(() => {
-        const handleWindowResize = () => {
-            setWindowSize([window.innerWidth, window.innerHeight]);
-        };
-
-        window.addEventListener('resize', handleWindowResize);
-
-        return () => {
-            window.removeEventListener('resize', handleWindowResize);
-        };
-    }, []);
     
     return (
         <>  
@@ -236,8 +211,8 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
                 <div style={{position: 'absolute', backgroundColor: 'lightgray', padding: '10px', borderBottom: '1px solid black', top: '10px', right: '10px' }}>
                     <h2>Online Users</h2>
                     <ul>
-                        {onlineUsers.map((user, index) => (
-                            <li key={index}>{user}</li>
+                        {onlineUsers.map((user) => (
+                            <li key={user}>{user}</li>
                         ))}
                     </ul>
                 </div>
@@ -251,37 +226,6 @@ const Board: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
             ) :  (
                 null
             )}
-            {collabPositions?.map((value) => (
-                <>
-                <div
-                    style={{
-                        position: 'absolute',
-                        left: (value.x) + 'px',
-                        top: (value.y) + 7 + 'px',
-                        opacity: value.id === socket?.url ? 0 : 1,
-                        zIndex: value.id === socket?.url ? -10 : 9999,
-                    }}
-                    key={value.id}
-                >
-                    {value.id}
-                </div>
-                <img
-                    src={Cursor}
-                    alt='Custom Pointer'
-                    style={{
-                        position: 'absolute',
-                        left: (value.x) + 'px',
-                        top: (value.y) + 'px',
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '0%',
-                        zIndex: value.id === socket?.url ? -10 : 9999,
-                        opacity: value.id === socket?.url ? 0 : 1,
-                    }}
-                    key={value.id}
-                />
-                </>
-            ))}
         </>
     );
 };

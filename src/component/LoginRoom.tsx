@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const LoginRoom = () => {
   const [username, setUsername] = useState('');
   const navigate = useNavigate();
 
-  const handleUsernameChange = (event) => {
+  const handleUsernameChange = (event: any) => {
     setUsername(event.target.value);
   };
 
