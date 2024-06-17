@@ -7,6 +7,7 @@ import {
 import './App.css';
 import Board from './component/Board';
 import LoginRoom from './component/LoginRoom';
+import CanvasOffline from './component/BoardComponent/CanvasOffline';
 
 const CanvasDrawing = () => {
   useEffect(() => {
@@ -44,7 +45,7 @@ const CanvasDrawing = () => {
       <div className="App">
         <Routes>
             <Route path="/board/:username" element={<Board brushColor={brushColor} brushSize={brushSize} eraserMode={eraserMode} />} />
-            <Route path="/board" element={<Board brushColor={brushColor} brushSize={brushSize} eraserMode={eraserMode} />} />
+            <Route path="/board/offline" element={<CanvasOffline brushColor={brushColor} brushSize={brushSize} eraserMode={eraserMode} />} />
             <Route path="/" element={<LoginRoom />} />
         </Routes>
       </div>
