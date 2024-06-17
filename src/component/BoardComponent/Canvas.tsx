@@ -9,6 +9,7 @@ import { WebSocketMessage } from "../types";
 
 const Canvas: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
     const { username } = useParams<{ username: string }>();
+    const decodedUsername = username && decodeURIComponent(username)
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const { lastJsonMessage, sendJsonMessage } = useWebSocket(import.meta.env.VITE_SERVERURL, {
@@ -68,7 +69,7 @@ const Canvas: React.FC<MyBoard> = ({ brushColor, brushSize, eraserMode }) => {
                     memctx.clearRect(0, 0, 300, 300);
                     memctx.drawImage(canvas, 0, 0);
                     const dataURL = canvas.toDataURL();
-                    if (username) {
+                    if (decodedUsername) {
                         sendJsonMessage({
                             type: 'canvasChange',
                             content: dataURL

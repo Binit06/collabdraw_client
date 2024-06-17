@@ -10,10 +10,12 @@ const LoginRoom = () => {
   };
 
   const handleJoinClick = () => {
-    if (username.trim() !== '') {
-      navigate(`/board/${username}`); // Navigate to /board/:username
+    if (username.trim() !== '' && username.split(' ').length === 1) {
+      navigate(`/board/${encodeURIComponent(username)}`); // Navigate to /board/:username
+    } else if (username.split(' ').length > 1) {
+      alert('The username must be of one word');
     } else {
-      alert('Please enter a username');
+      alert('Please Enter a username')
     }
   };
 
